@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GM &amp; ROWC Calculator — ECAL Kolkata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(ellipse 120% 80% at 20% 10%, #0d0d2e 0%, #060610 55%, #0a060e 100%);
+    font-family: 'Outfit', 'Segoe UI', sans-serif;
+    color: #e2e8f0; padding: 20px 14px 48px;
+  }
+  .mono { font-family: 'IBM Plex Mono', 'Courier New', monospace; }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 30px; }
+  .header-badge { font-size: 10px; letter-spacing: 0.35em; color: #f59e0b; text-transform: uppercase; margin-bottom: 7px; }
+  .header h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.01em; }
+  .header h1 .amber { color: #f59e0b; }
+  .header h1 .indigo { color: #818cf8; }
+  .header p { margin-top: 7px; font-size: 12px; color: #374151; }
+  .divider { display: flex; align-items: center; gap: 10px; margin: 22px 0 14px; }
+  .divider span { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; white-space: nowrap; }
+  .divider hr { flex: 1; border: none; height: 1px; }
+  .div-indigo span { color: #818cf8; } .div-indigo hr { background: rgba(129,140,248,0.3); }
+  .div-amber  span { color: #f59e0b; } .div-amber  hr { background: rgba(245,158,11,0.2); }
+  .div-green  span { color: #22c55e; } .div-green  hr { background: rgba(34,197,94,0.2); }
+  .grid-2    { display: grid; grid-template-columns: 1fr 1.1fr; gap: 14px; margin-bottom: 20px; }
+  .grid-post { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .card { background: rgba(13,13,28,0.92); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 18px 20px; }
+  .card-title { font-size: 10px; color: #374151; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+  .bridge { background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.15); border-radius: 10px; padding: 16px 20px; display: flex; flex-wrap: wrap; justify-content: space-around; gap: 14px; margin-bottom: 6px; }
+  .bridge-stat { text-align: center; }
+  .bridge-stat .bl { font-size: 9px; color: #374151; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+  .bridge-stat .bv { font-size: 16px; font-weight: 600; }
+  .field { margin-bottom: 13px; }
+  .field-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .field-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.09em; }
+  .field-badge { font-size: 9px; background: rgba(129,140,248,0.15); color: #818cf8; padding: 1px 6px; border-radius: 10px; letter-spacing: 0.06em; }
+  .field-row { display: flex; gap: 6px; align-items: center; }
+  .field-unit { font-size: 11px; color: #475569; white-space: nowrap; }
+  input[type="number"].inp-main { flex: 1; padding: 7px 10px; background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.3); border-radius: 6px; color: #f1f5f9; font-family: 'IBM Plex Mono', monospace; font-size: 13px; outline: none; width: 100%; }
+  input[type="number"].inp-main:focus { border-color: rgba(245,158,11,0.65); }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .stat-label { font-size: 11px; color: #64748b; }
+  .stat-val { font-size: 13px; color: #94a3b8; }
+  .stat-val.accent       { color: #f59e0b; font-weight: 600; }
+  .stat-val.accent-green { color: #22c55e; font-weight: 600; }
+  .fixed-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .fixed-label { font-size: 11px; color: #374151; }
+  .fixed-val   { font-size: 12px; color: #4b5563; }
+  .fixed-sep   { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.04); }
+  .lever { margin-bottom: 14px; }
+  .lever-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .lever-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+  .lever-val   { font-size: 12px; color: #f59e0b; font-family: 'IBM Plex Mono', monospace; }
+  input[type="range"] { width: 100%; accent-color: #f59e0b; cursor: pointer; margin-bottom: 4px; height: 4px; }
+  input[type="number"].inp-lever { width: 100%; padding: 5px 8px; background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.18); border-radius: 5px; color: #e2e8f0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; outline: none; }
+  input[type="number"].inp-lever:focus { border-color: rgba(245,158,11,0.4); }
+  .calc-pd { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .calc-pd-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 6px; }
+  .calc-pd-note  { font-size: 9px; color: #374151; }
+  .calc-pd-val   { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .gauge { border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; transition: background 0.3s, border-color 0.3s; }
+  .gauge.miss { background: rgba(244,63,94,0.06); border: 1px solid rgba(244,63,94,0.18); }
+  .gauge.hit  { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.25); }
+  .gauge-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .gauge-title  { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.09em; }
+  .gauge-status { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; }
+  .gauge-body   { display: flex; gap: 16px; align-items: center; }
+  .gauge-num    { text-align: center; min-width: 64px; }
+  .gauge-num .gn-lbl { font-size: 9px; color: #475569; margin-bottom: 2px; }
+  .gauge-num .gn-val { font-size: 18px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+  .gauge-track  { flex: 1; }
+  .gauge-bar-bg { height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+  .gauge-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+  .gauge-scale  { display: flex; justify-content: space-between; margin-top: 4px; }
+  .gauge-scale span { font-size: 9px; color: #374151; }
+  .btn-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .btn { border-radius: 6px; padding: 7px 13px; font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; transition: background 0.15s; border-width: 1px; border-style: solid; }
+  .btn-slate { background: rgba(100,116,139,0.10); border-color: rgba(100,116,139,0.32); color: #64748b; }
+  .btn-slate:hover { background: rgba(100,116,139,0.18); }
+  .footer-note { margin-top: 28px; padding: 12px 18px; background: rgba(255,255,255,0.02); border-radius: 8px; font-size: 11px; color: #2d3748; text-align: center; letter-spacing: 0.03em; }
+  .mt12 { margin-top: 12px; }
+  @media (max-width: 760px) { .grid-2, .grid-post { grid-template-columns: 1fr; } }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type=number] { -moz-appearance: textfield; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">◆ ECAL Kolkata Branch ◆</div>
+    <h1>Gross Margin <span class="amber">&amp;</span> ROWC <span class="indigo">Calculator</span></h1>
+    <p>Pre baseline &nbsp;·&nbsp; Post Scenario 1 (same GM INR) &nbsp;·&nbsp; Post Scenario 2 (same ROWC %)</p>
+  </div>
+
+  <!-- PRE -->
+  <div class="divider div-indigo"><span>◀ PRE BASELINE</span><hr /></div>
+  <div class="grid-2">
+
+    <!-- PRE Inputs -->
+    <div class="card">
+      <div class="card-title">⬡ Inputs</div>
+      <div class="field">
+        <div class="field-header"><span class="field-label">Overall Volume</span></div>
+        <div class="field-row"><input class="inp-main mono" type="number" id="p_vol" value="100" step="any" /><span class="field-unit">Ms</span></div>
+      </div>
+      <div class="field">
+        <div class="field-header"><span class="field-label">Cost / M</span></div>
+        <div class="field-row"><input class="inp-main mono" type="number" id="p_costM" value="5000" step="any" /><span class="field-unit">₹/M</span></div>
+      </div>
+      <div class="field">
+        <div class="field-header"><span class="field-label">Retail Sales %</span></div>
+        <div class="field-row"><input class="inp-main mono" type="number" id="p_retPct" value="60" step="any" /><span class="field-unit">%</span></div>
+      </div>
+      <div class="field">
+        <div class="field-header"><span class="field-label">Wholesale Margin %</span><span class="field-badge">Input</span></div>
+        <div class="field-row"><input class="inp-main mono" type="number" id="p_whlMgn" value="3" step="any" /><span class="field-unit">%</span></div>
+      </div>
+      <div class="fixed-sep">
+        <div class="fixed-row"><span class="fixed-label">Retail Margin (fixed)</span><span class="fixed-val mono">1.45%</span></div>
+        <div class="fixed-row"><span class="fixed-label">Wholesale Sales %</span><span class="fixed-val mono" id="p_whlPct_disp">40.00%</span></div>
+        <div class="fixed-row"><span class="fixed-label">Overheads (% of GM, fixed)</span><span class="fixed-val mono">30%</span></div>
+        <div class="fixed-row"><span class="fixed-label">Pipeline Days (fixed)</span><span class="fixed-val mono">8 days</span></div>
+      </div>
+    </div>
+
+    <!-- PRE Calculated -->
+    <div class="card">
+      <div class="card-title">⬡ Calculated Metrics</div>
+      <div class="stat-row"><span class="stat-label">Overall Sales (INR)</span><span class="stat-val mono" id="p_sales"></span></div>
+      <div class="stat-row"><span class="stat-label">Retail Sales (INR)</span><span class="stat-val mono" id="p_rs"></span></div>
+      <div class="stat-row"><span class="stat-label">Wholesale Sales (INR)</span><span class="stat-val mono" id="p_ws"></span></div>
+      <div class="stat-row"><span class="stat-label">Gross Margin (INR)</span><span class="stat-val mono accent" id="p_gm"></span></div>
+      <div class="stat-row"><span class="stat-label">Gross Margin %</span><span class="stat-val mono accent" id="p_gmPct"></span></div>
+      <div class="stat-row"><span class="stat-label">Overheads (INR)</span><span class="stat-val mono" id="p_oh"></span></div>
+      <div class="stat-row"><span class="stat-label">Net Margin (INR)</span><span class="stat-val mono" id="p_nm"></span></div>
+      <div class="stat-row"><span class="stat-label">Working Capital</span><span class="stat-val mono" id="p_wc"></span></div>
+      <div class="stat-row"><span class="stat-label">ROWC</span><span class="stat-val mono accent" id="p_rowc"></span></div>
+    </div>
+  </div>
+
+  <!-- Bridge -->
+  <div class="bridge">
+    <div class="bridge-stat">
+      <div class="bl">Volume Delta</div>
+      <div style="display:flex;align-items:center;gap:4px;justify-content:center">
+        <input type="number" id="b_volDelta" value="-5" step="0.1"
+          style="width:64px;background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.35);border-radius:5px;color:#f43f5e;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;padding:4px 6px;outline:none;text-align:center" />
+        <span style="color:#f43f5e;font-size:13px;font-weight:600">%</span>
+      </div>
+    </div>
+    <div class="bridge-stat">
+      <div class="bl">Value Delta</div>
+      <div style="display:flex;align-items:center;gap:4px;justify-content:center">
+        <input type="number" id="b_valDelta" value="30" step="0.1"
+          style="width:64px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:5px;color:#22c55e;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;padding:4px 6px;outline:none;text-align:center" />
+        <span style="color:#22c55e;font-size:13px;font-weight:600">%</span>
+      </div>
+    </div>
+    <div class="bridge-stat"><div class="bl">Post Sales</div><div class="bv mono" style="color:#f59e0b" id="b_postSales"></div></div>
+    <div class="bridge-stat"><div class="bl">Post Volume</div><div class="bv mono" style="color:#94a3b8" id="b_postVol"></div></div>
+    <div class="bridge-stat"><div class="bl">Post Overheads (INR)</div><div class="bv mono" style="color:#f59e0b" id="b_postOh">—</div></div>
+  </div>
+
+  <!-- POST Scenarios -->
+  <div class="grid-post">
+
+    <!-- Scenario 1 -->
+    <div>
+      <div class="divider div-amber"><span>► Scenario 1 · Target: Same Net Margin (INR)</span><hr /></div>
+
+      <div class="gauge miss" id="g1">
+        <div class="gauge-header">
+          <span class="gauge-title">Net Margin (INR) — Current vs Target</span>
+          <span class="gauge-status" id="g1_status">—</span>
+        </div>
+        <div class="gauge-body">
+          <div class="gauge-num"><div class="gn-lbl">TARGET</div><div class="gn-val" id="g1_target" style="color:#818cf8">—</div></div>
+          <div class="gauge-track">
+            <div class="gauge-bar-bg"><div class="gauge-bar-fill" id="g1_fill" style="width:0%"></div></div>
+            <div class="gauge-scale"><span>0</span><span>Target</span></div>
+          </div>
+          <div class="gauge-num"><div class="gn-lbl">CURRENT</div><div class="gn-val" id="g1_current">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⬡ Adjust Levers</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-label">Retail %</span><span class="lever-val" id="lv_s1rp_lbl">60.0%</span></div>
+          <input type="range" id="lv_s1rp_r" min="0" max="100" step="0.5" value="60" />
+          <input type="number" class="inp-lever mono" id="lv_s1rp_n" min="0" max="100" step="0.5" value="60" />
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-label">Retail Margin %</span><span class="lever-val" id="lv_s1rm_lbl">1.45%</span></div>
+          <input type="range" id="lv_s1rm_r" min="0" max="10" step="0.05" value="1.45" />
+          <input type="number" class="inp-lever mono" id="lv_s1rm_n" min="0" max="10" step="0.05" value="1.45" />
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-label">Wholesale Margin %</span><span class="lever-val" id="lv_s1wm_lbl">3.00%</span></div>
+          <input type="range" id="lv_s1wm_r" min="0" max="25" step="0.01" value="3" />
+          <input type="number" class="inp-lever mono" id="lv_s1wm_n" min="0" max="25" step="0.01" value="3" />
+        </div>
+        <div class="calc-pd">
+          <div class="calc-pd-label">⟳ Calculated Pipeline Days <span class="calc-pd-note">(to maintain PRE ROWC)</span></div>
+          <div class="calc-pd-val" id="s1_pd_calc" style="color:#f59e0b">— days</div>
+        </div>
+        <div class="btn-row"><button class="btn btn-slate" id="reset1">↺ Reset to Pre</button></div>
+      </div>
+
+      <div class="card mt12">
+        <div class="card-title">⬡ Post S1 Metrics</div>
+        <div class="stat-row"><span class="stat-label">Retail Sales %</span><span class="stat-val mono" id="s1_rp"></span></div>
+        <div class="stat-row"><span class="stat-label">Wholesale Sales %</span><span class="stat-val mono" id="s1_wp"></span></div>
+        <div class="stat-row"><span class="stat-label">Retail Margin %</span><span class="stat-val mono" id="s1_rm"></span></div>
+        <div class="stat-row"><span class="stat-label">Wholesale Margin %</span><span class="stat-val mono" id="s1_wm"></span></div>
+        <div class="stat-row"><span class="stat-label">Pipeline Days (calc.)</span><span class="stat-val mono accent" id="s1_pd"></span></div>
+        <div class="stat-row"><span class="stat-label">Overheads (INR)</span><span class="stat-val mono" id="s1_oh"></span></div>
+        <div class="stat-row"><span class="stat-label">Overall Sales (INR)</span><span class="stat-val mono" id="s1_sales"></span></div>
+        <div class="stat-row"><span class="stat-label">Gross Margin (INR)</span><span class="stat-val mono" id="s1_gm"></span></div>
+        <div class="stat-row"><span class="stat-label">Gross Margin %</span><span class="stat-val mono" id="s1_gmPct"></span></div>
+        <div class="stat-row"><span class="stat-label">Net Margin (INR)</span><span class="stat-val mono accent" id="s1_nm"></span></div>
+        <div class="stat-row"><span class="stat-label">Working Capital</span><span class="stat-val mono" id="s1_wc"></span></div>
+        <div class="stat-row"><span class="stat-label">ROWC</span><span class="stat-val mono" id="s1_rowc"></span></div>
+      </div>
+    </div>
+
+    <!-- Scenario 2 -->
+    <div>
+      <div class="divider div-green"><span>► Scenario 2 · Same ROWC% at PRE Pipeline Days</span><hr /></div>
+
+      <div class="gauge miss" id="g2">
+        <div class="gauge-header">
+          <span class="gauge-title">ROWC % at PRE Pipeline Days — Current vs Target</span>
+          <span class="gauge-status" id="g2_status">—</span>
+        </div>
+        <div class="gauge-body">
+          <div class="gauge-num"><div class="gn-lbl">TARGET</div><div class="gn-val" id="g2_target" style="color:#818cf8">—</div></div>
+          <div class="gauge-track">
+            <div class="gauge-bar-bg"><div class="gauge-bar-fill" id="g2_fill" style="width:0%"></div></div>
+            <div class="gauge-scale"><span>0%</span><span>100%</span></div>
+          </div>
+          <div class="gauge-num"><div class="gn-lbl">CURRENT</div><div class="gn-val" id="g2_current">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⬡ Adjust Levers</div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-label">Retail %</span><span class="lever-val" id="lv_s2rp_lbl">60.0%</span></div>
+          <input type="range" id="lv_s2rp_r" min="0" max="100" step="0.5" value="60" />
+          <input type="number" class="inp-lever mono" id="lv_s2rp_n" min="0" max="100" step="0.5" value="60" />
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-label">Retail Margin %</span><span class="lever-val" id="lv_s2rm_lbl">1.45%</span></div>
+          <input type="range" id="lv_s2rm_r" min="0" max="10" step="0.05" value="1.45" />
+          <input type="number" class="inp-lever mono" id="lv_s2rm_n" min="0" max="10" step="0.05" value="1.45" />
+        </div>
+        <div class="lever">
+          <div class="lever-header"><span class="lever-label">Wholesale Margin %</span><span class="lever-val" id="lv_s2wm_lbl">3.00%</span></div>
+          <input type="range" id="lv_s2wm_r" min="0" max="25" step="0.01" value="3" />
+          <input type="number" class="inp-lever mono" id="lv_s2wm_n" min="0" max="25" step="0.01" value="3" />
+        </div>
+        <div class="calc-pd">
+          <div class="calc-pd-label">Pipeline Days <span class="calc-pd-note">(fixed at PRE)</span></div>
+          <div class="calc-pd-val" style="color:#818cf8" id="s2_pd_fixed">8 days</div>
+        </div>
+        <div class="btn-row"><button class="btn btn-slate" id="reset2">↺ Reset to Pre</button></div>
+      </div>
+
+      <div class="card mt12">
+        <div class="card-title">⬡ Post S2 Metrics</div>
+        <div class="stat-row"><span class="stat-label">Retail Sales %</span><span class="stat-val mono" id="s2_rp"></span></div>
+        <div class="stat-row"><span class="stat-label">Wholesale Sales %</span><span class="stat-val mono" id="s2_wp"></span></div>
+        <div class="stat-row"><span class="stat-label">Retail Margin %</span><span class="stat-val mono" id="s2_rm"></span></div>
+        <div class="stat-row"><span class="stat-label">Wholesale Margin %</span><span class="stat-val mono" id="s2_wm"></span></div>
+        <div class="stat-row"><span class="stat-label">Pipeline Days (PRE, fixed)</span><span class="stat-val mono" id="s2_pd"></span></div>
+        <div class="stat-row"><span class="stat-label">Overheads (INR)</span><span class="stat-val mono" id="s2_oh"></span></div>
+        <div class="stat-row"><span class="stat-label">Overall Sales (INR)</span><span class="stat-val mono" id="s2_sales"></span></div>
+        <div class="stat-row"><span class="stat-label">Gross Margin (INR)</span><span class="stat-val mono" id="s2_gm"></span></div>
+        <div class="stat-row"><span class="stat-label">Gross Margin %</span><span class="stat-val mono" id="s2_gmPct"></span></div>
+        <div class="stat-row"><span class="stat-label">Net Margin (INR)</span><span class="stat-val mono" id="s2_nm"></span></div>
+        <div class="stat-row"><span class="stat-label">Working Capital</span><span class="stat-val mono" id="s2_wc"></span></div>
+        <div class="stat-row"><span class="stat-label">ROWC</span><span class="stat-val mono accent-green" id="s2_rowc"></span></div>
+      </div>
+    </div>
+
+  </div><!-- /grid-post -->
+
+  <div class="footer-note">
+    ROWC = Net Margin / WC &nbsp;·&nbsp; WC = Sales × Pipeline Days / 30 (monthly) &nbsp;·&nbsp;
+    PRE Overheads = 30% of GM &nbsp;·&nbsp; POST Overheads (INR) = PRE Overheads (INR) × 1.3 &nbsp;·&nbsp;
+    PD back-calculated: nm × 3000 / (Sales × ROWC_target)
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ─── Helpers ─────────────────────────────────────────── */
+const f2 = (n, d = 2) => (!isFinite(n) || isNaN(n)) ? '0.00' : n.toFixed(d);
+const pct   = n => f2(n) + '%';
+const fdays = n => (!isFinite(n) || isNaN(n) || n <= 0) ? '— days' : f2(n, 2) + ' days';
+const inrFmt = n => {
+  if (!isFinite(n) || isNaN(n)) return '—';
+  const a = Math.abs(n);
+  if (a >= 1e7) return '₹' + (n/1e7).toFixed(2) + ' Cr';
+  if (a >= 1e5) return '₹' + (n/1e5).toFixed(2) + ' L';
+  return '₹' + n.toFixed(0);
+};
+const $ = id => document.getElementById(id);
+const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+
+/* ─── Core calc ──────────────────────────────────────── */
+// PRE calc: overhead as % of GM
+function calc(sales, rp, rm, wm, oh, pd) {
+  const rs    = sales * rp / 100;
+  const ws    = sales * (100 - rp) / 100;
+  const gm    = rs * rm / 100 + ws * wm / 100;
+  const gmPct = sales ? (gm / sales) * 100 : 0;
+  const ohInr = gm * oh / 100;
+  const nm    = gm - ohInr;
+  const wc    = sales * pd / 30;
+  const rowc  = wc ? (nm / wc) * 100 : 0;
+  return { rs, ws, gm, gmPct, ohInr, nm, wc, rowc };
+}
+
+// POST calc: overhead as fixed INR (pre.ohInr * 1.3)
+function calcPost(sales, rp, rm, wm, ohInrFixed, pd) {
+  const rs    = sales * rp / 100;
+  const ws    = sales * (100 - rp) / 100;
+  const gm    = rs * rm / 100 + ws * wm / 100;
+  const gmPct = sales ? (gm / sales) * 100 : 0;
+  const ohInr = ohInrFixed;
+  const nm    = gm - ohInr;
+  const wc    = sales * pd / 30;
+  const rowc  = wc ? (nm / wc) * 100 : 0;
+  return { rs, ws, gm, gmPct, ohInr, nm, wc, rowc };
+}
+
+// Back-calculate pipeline days to hit target ROWC, given fixed overhead INR
+// ROWC = nm * 100 / (sales * pd / 30)  →  pd = nm * 3000 / (sales * ROWC_target)
+function calcPD(sales, rp, rm, wm, ohInrFixed, rowcTarget) {
+  if (!rowcTarget || rowcTarget === 0) return NaN;
+  const gm = sales * (rp * rm + (100 - rp) * wm) / 10000;
+  const nm = gm - ohInrFixed;
+  return nm * 3000 / (sales * rowcTarget);
+}
+
+/* ─── Constants ──────────────────────────────────────── */
+const PRE = { retMgn: 1.45, oh: 30, pd: 8 };
+
+/* ─── Input readers ──────────────────────────────────── */
+function getPreInputs() {
+  return {
+    vol:    parseFloat($('p_vol').value)    || 0,
+    costM:  parseFloat($('p_costM').value)  || 0,
+    retPct: parseFloat($('p_retPct').value) || 0,
+    whlMgn: parseFloat($('p_whlMgn').value) || 0,
+  };
+}
+function getLever(prefix) {
+  return {
+    rp: parseFloat($('lv_' + prefix + 'rp_n').value) || 0,
+    rm: parseFloat($('lv_' + prefix + 'rm_n').value) || 0,
+    wm: parseFloat($('lv_' + prefix + 'wm_n').value) || 0,
+  };
+}
+
+/* ─── Gauge updater ──────────────────────────────────── */
+function updateGauge(idx, current, target, fmtFn, tol) {
+  const zeroTarget = (target === 0);
+  tol = (tol !== undefined) ? tol : (zeroTarget ? 0 : (Math.abs(target) * 0.001 || 0.05));
+
+  let met, col, statusText, fill;
+
+  if (zeroTarget) {
+    // Positive / negative indicator
+    met  = current > 0;
+    const breakeven = Math.abs(current) < Math.abs(current) * 0.001 + 1;
+    col  = met ? '#22c55e' : '#f43f5e';
+    statusText = met ? '✓ POSITIVE' : '✗ NEGATIVE';
+    fill = met ? 100 : 0;
+  } else {
+    const gap  = current - target;
+    met  = Math.abs(gap) <= tol;
+    const close = !met && Math.abs(gap) <= Math.abs(target) * 0.03 + 0.5;
+    col  = met ? '#22c55e' : close ? '#f59e0b' : '#f43f5e';
+    statusText = met ? '✓ ON TARGET' : (gap > 0 ? '+' : '') + fmtFn(gap) + ' vs target';
+    fill = Math.min(100, Math.max(0, target !== 0 ? (current / target) * 100 : 0));
+  }
+
+  $('g' + idx).className = 'gauge ' + (met ? 'hit' : 'miss');
+  if (!zeroTarget) $('g' + idx + '_target').textContent = fmtFn(target);
+  $('g' + idx + '_current').textContent = fmtFn(current);
+  $('g' + idx + '_current').style.color = col;
+  $('g' + idx + '_status').textContent  = statusText;
+  $('g' + idx + '_status').style.color  = col;
+  $('g' + idx + '_fill').style.width    = fill + '%';
+  $('g' + idx + '_fill').style.background = 'linear-gradient(90deg,' + col + '88,' + col + ')';
+}
+
+/* ─── Main render ─────────────────────────────────────── */
+function render() {
+  const { vol, costM, retPct, whlMgn } = getPreInputs();
+  const preSales  = vol * costM;
+  const pre       = calc(preSales, retPct, PRE.retMgn, whlMgn, PRE.oh, PRE.pd);
+  const volDelta  = parseFloat($('b_volDelta').value) || 0;
+  const valDelta  = parseFloat($('b_valDelta').value) || 0;
+  const postSales = preSales  * (1 + volDelta / 100) * (1 + valDelta / 100);
+  const postVol   = vol * (1 + volDelta / 100);
+
+  // PRE outputs
+  set('p_whlPct_disp', pct(100 - retPct));
+  set('p_sales',  inrFmt(preSales));
+  set('p_rs',     inrFmt(pre.rs));
+  set('p_ws',     inrFmt(pre.ws));
+  set('p_gm',     inrFmt(pre.gm));
+  set('p_gmPct',  pct(pre.gmPct));
+  set('p_oh',     inrFmt(pre.ohInr));
+  set('p_nm',     inrFmt(pre.nm));
+  set('p_wc',     inrFmt(pre.wc));
+  set('p_rowc',   pct(pre.rowc));
+
+  // Bridge
+  const postOhInr = pre.ohInr * 1.16;
+  set('b_postSales', inrFmt(postSales));
+  set('b_postVol',   f2(postVol, 1) + ' Ms');
+  set('b_postOh',    inrFmt(postOhInr));
+
+  // ── Scenario 1 ──
+  const lv1 = getLever('s1');
+  const pd1 = calcPD(postSales, lv1.rp, lv1.rm, lv1.wm, postOhInr, pre.rowc);
+  const s1  = calcPost(postSales, lv1.rp, lv1.rm, lv1.wm, postOhInr, isFinite(pd1) && pd1 > 0 ? pd1 : PRE.pd);
+
+  updateGauge(1, s1.nm, pre.nm, inrFmt);
+
+  const pd1Disp = fdays(pd1);
+  set('s1_pd_calc', pd1Disp);
+  set('s1_rp',    pct(lv1.rp));
+  set('s1_wp',    pct(100 - lv1.rp));
+  set('s1_rm',    pct(lv1.rm));
+  set('s1_wm',    pct(lv1.wm));
+  set('s1_pd',    pd1Disp);
+  set('s1_oh',    inrFmt(postOhInr));
+  set('s1_sales', inrFmt(postSales));
+  set('s1_gm',    inrFmt(s1.gm));
+  set('s1_gmPct', pct(s1.gmPct));
+  set('s1_nm',    inrFmt(s1.nm));
+  set('s1_wc',    inrFmt(s1.wc));
+  set('s1_rowc',  pct(s1.rowc));
+
+  // ── Scenario 2 ── (same ROWC% at PRE pipeline days)
+  const lv2 = getLever('s2');
+  const s2  = calcPost(postSales, lv2.rp, lv2.rm, lv2.wm, postOhInr, PRE.pd);
+
+  updateGauge(2, s2.rowc, pre.rowc, v => f2(v) + '%', 0.05);
+
+  set('s2_pd_fixed', PRE.pd + ' days');
+  set('s2_rp',    pct(lv2.rp));
+  set('s2_wp',    pct(100 - lv2.rp));
+  set('s2_rm',    pct(lv2.rm));
+  set('s2_wm',    pct(lv2.wm));
+  set('s2_pd',    PRE.pd + ' days');
+  set('s2_oh',    inrFmt(postOhInr));
+  set('s2_sales', inrFmt(postSales));
+  set('s2_gm',    inrFmt(s2.gm));
+  set('s2_gmPct', pct(s2.gmPct));
+  set('s2_nm',    inrFmt(s2.nm));
+  set('s2_wc',    inrFmt(s2.wc));
+  set('s2_rowc',  pct(s2.rowc));
+
+  return { pre, postSales };
+}
+
+/* ─── Lever sync ─────────────────────────────────────── */
+function bindLever(prefix, dec) {
+  const r   = $('lv_' + prefix + '_r');
+  const n   = $('lv_' + prefix + '_n');
+  const lbl = $('lv_' + prefix + '_lbl');
+  function sync(val) {
+    const v = parseFloat(val);
+    r.value = v; n.value = v;
+    lbl.textContent = f2(v, dec) + '%';
+    render();
+  }
+  r.addEventListener('input', e => sync(e.target.value));
+  n.addEventListener('input', e => sync(e.target.value));
+}
+
+['s1rp','s1rm','s1wm','s2rp','s2rm','s2wm'].forEach(k => {
+  const dec = k.endsWith('rm') || k.endsWith('wm') ? 3 : 1;
+  bindLever(k, dec);
+});
+
+/* ─── PRE listeners ──────────────────────────────────── */
+['p_vol','p_costM','p_retPct','p_whlMgn','b_volDelta','b_valDelta'].forEach(id => $(id).addEventListener('input', render));
+
+/* ─── Reset buttons ──────────────────────────────────── */
+function resetLevers(prefix) {
+  const rp = parseFloat($('p_retPct').value) || 60;
+  const wm = parseFloat($('p_whlMgn').value) || 3;
+  [['rp', rp, 1], ['rm', 1.45, 3], ['wm', wm, 3]].forEach(([k, v, dec]) => {
+    $('lv_' + prefix + k + '_r').value = v;
+    $('lv_' + prefix + k + '_n').value = v;
+    $('lv_' + prefix + k + '_lbl').textContent = f2(v, dec) + '%';
+  });
+  render();
+}
+$('reset1').addEventListener('click', () => resetLevers('s1'));
+$('reset2').addEventListener('click', () => resetLevers('s2'));
+
+/* ─── Initial render ─────────────────────────────────── */
+render();
+</script>
+</body>
+</html>
