@@ -128,7 +128,10 @@
         <div class="fixed-row"><span class="fixed-label">Retail Margin (fixed)</span><span class="fixed-val mono">1.45%</span></div>
         <div class="fixed-row"><span class="fixed-label">Wholesale Sales %</span><span class="fixed-val mono" id="p_whlPct_disp">40.00%</span></div>
         <div class="fixed-row"><span class="fixed-label">Overheads (% of GM, fixed)</span><span class="fixed-val mono">30%</span></div>
-        <div class="fixed-row"><span class="fixed-label">Pipeline Days (fixed)</span><span class="fixed-val mono">8 days</span></div>
+        <div class="fixed-row"><span class="fixed-label">Pipeline Days</span>
+          <input type="number" id="p_pd" value="8" min="1" max="60" step="0.5"
+            style="width:70px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.3);border-radius:5px;color:#f1f5f9;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:3px 7px;outline:none;text-align:center" />
+        </div>
       </div>
     </div>
 
@@ -411,7 +414,8 @@ function updateGauge(idx, current, target, fmtFn, tol) {
 function render() {
   const { vol, costM, retPct, whlMgn } = getPreInputs();
   const preSales  = vol * costM;
-  const pre       = calc(preSales, retPct, PRE.retMgn, whlMgn, PRE.oh, PRE.pd);
+  const prePD     = parseFloat($('p_pd').value) || 8;
+  const pre       = calc(preSales, retPct, PRE.retMgn, whlMgn, PRE.oh, prePD);
   const volDelta  = parseFloat($('b_volDelta').value) || 0;
   const valDelta  = parseFloat($('b_valDelta').value) || 0;
   const postSales = preSales  * (1 + volDelta / 100) * (1 + valDelta / 100);
@@ -459,16 +463,16 @@ function render() {
 
   // ── Scenario 2 ── (same ROWC% at PRE pipeline days)
   const lv2 = getLever('s2');
-  const s2  = calcPost(postSales, lv2.rp, lv2.rm, lv2.wm, postOhInr, PRE.pd);
+  const s2  = calcPost(postSales, lv2.rp, lv2.rm, lv2.wm, postOhInr, prePD);
 
   updateGauge(2, s2.rowc, pre.rowc, v => f2(v) + '%', 0.05);
 
-  set('s2_pd_fixed', PRE.pd + ' days');
+  set('s2_pd_fixed', prePD + ' days');
   set('s2_rp',    pct(lv2.rp));
   set('s2_wp',    pct(100 - lv2.rp));
   set('s2_rm',    pct(lv2.rm));
   set('s2_wm',    pct(lv2.wm));
-  set('s2_pd',    PRE.pd + ' days');
+  set('s2_pd',    prePD + ' days');
   set('s2_oh',    inrFmt(postOhInr));
   set('s2_sales', inrFmt(postSales));
   set('s2_gm',    inrFmt(s2.gm));
@@ -501,7 +505,7 @@ function bindLever(prefix, dec) {
 });
 
 /* ─── PRE listeners ──────────────────────────────────── */
-['p_vol','p_costM','p_retPct','p_whlMgn','b_volDelta','b_valDelta'].forEach(id => $(id).addEventListener('input', render));
+['p_vol','p_costM','p_retPct','p_whlMgn','p_pd','b_volDelta','b_valDelta'].forEach(id => $(id).addEventListener('input', render));
 
 /* ─── Reset buttons ──────────────────────────────────── */
 function resetLevers(prefix) {
