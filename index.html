@@ -300,7 +300,7 @@
 
   <div class="footer-note">
     ROWC = Net Margin / WC &nbsp;·&nbsp; WC = Sales × Pipeline Days / 30 (monthly) &nbsp;·&nbsp;
-    PRE Overheads = 30% of GM &nbsp;·&nbsp; POST Overheads (INR) = PRE Overheads (INR) × 1.3 &nbsp;·&nbsp;
+    PRE Overheads = 30% of GM &nbsp;·&nbsp; POST Overheads (INR) = PRE Overheads (INR) × 1.08 &nbsp;·&nbsp;
     PD back-calculated: nm × 3000 / (Sales × ROWC_target)
   </div>
 
@@ -335,7 +335,7 @@ function calc(sales, rp, rm, wm, oh, pd) {
   return { rs, ws, gm, gmPct, ohInr, nm, wc, rowc };
 }
 
-// POST calc: overhead as fixed INR (pre.ohInr * 1.3)
+// POST calc: overhead as fixed INR (pre.ohInr * 1.08)
 function calcPost(sales, rp, rm, wm, ohInrFixed, pd) {
   const rs    = sales * rp / 100;
   const ws    = sales * (100 - rp) / 100;
@@ -434,7 +434,7 @@ function render() {
   set('p_rowc',   pct(pre.rowc));
 
   // Bridge
-  const postOhInr = pre.ohInr * 1.16;
+  const postOhInr = pre.ohInr * 1.08;
   set('b_postSales', inrFmt(postSales));
   set('b_postVol',   f2(postVol, 1) + ' Ms');
   set('b_postOh',    inrFmt(postOhInr));
